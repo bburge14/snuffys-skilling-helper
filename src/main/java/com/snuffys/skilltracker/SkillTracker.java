@@ -78,6 +78,8 @@ class SkillTracker {
     private final Set<Skill> pausedSkills = EnumSet.noneOf(Skill.class);
     // Logs, fish, ore, food cooked and burnt this session (from chat), shown with their rate on the skill's card
     private final Map<ItemsGathered.Kind, Integer> itemCounts = new java.util.concurrent.ConcurrentHashMap<>();
+    // XP drops this session per skill (one per action), for the card's "Made: 120 (400/hr)" in skills without items
+    private final Map<Skill, Integer> actionCounts = new java.util.concurrent.ConcurrentHashMap<>();
     private volatile int combatLevel = 3;
     private NavigationButton navButton;
     private BradsMultiToolPanel panel;
@@ -134,6 +136,7 @@ class SkillTracker {
         recentXpDrops.clear();
         pausedSkills.clear();
         itemCounts.clear();
+        actionCounts.clear();
         // Not brought back after a restart either
         if (configManager.getRSProfileKey() != null) {
             configManager.unsetRSProfileConfiguration(identity.configGroup, SESSION_KEY);
@@ -157,24 +160,35 @@ class SkillTracker {
      */
     public List<String[]> itemLines(Skill skill) {
         List<String[]> lines = new ArrayList<>();
-        long seconds = (long) (skillActiveTicks.getOrDefault(skill, 0L) * 0.6);
+        // Per hour from the skill's XP rate (count per XP gained, times XP/hr), so it matches the card's XP/hr
+        int gained = getSkillGained(skill);
+        int xpPerHour = getSkillXpPerHour(skill);
         int burnt = itemCounts.getOrDefault(ItemsGathered.Kind.BURNT, 0);
+        boolean counted = false;
         for (ItemsGathered.Kind kind : ItemsGathered.Kind.values()) {
             int count = itemCounts.getOrDefault(kind, 0);
             if (kind.skill != skill || kind == ItemsGathered.Kind.BURNT || count == 0 && !(kind == ItemsGathered.Kind.COOKED && burnt > 0)) {
                 continue;
             }
-            String value = ItemsGathered.countAndRate(count, seconds);
+            counted = true;
+            String value = ItemsGathered.countAndRate(count, gained, xpPerHour);
             if (kind == ItemsGathered.Kind.COOKED && burnt > 0) {
                 value += ", " + String.format("%,d", burnt) + " burnt (" + Math.round(100.0 * burnt / (count + burnt)) + "%)";
             }
             lines.add(new String[]{kind.label, value});
+        }
+        // Skills without items counted from chat: each XP drop is one action ("Steals", "Made", "Casts"...)
+        String noun = ItemsGathered.actionNoun(skill);
+        int actions = actionCounts.getOrDefault(skill, 0);
+        if (!counted && noun != null && actions > 0) {
+            lines.add(new String[]{noun, ItemsGathered.countAndRate(actions, gained, xpPerHour)});
         }
         return lines;
     }
 
     private void clearItems(Skill skill) {
         itemCounts.keySet().removeIf(kind -> kind.skill == skill);
+        actionCounts.remove(skill);
     }
 
     @Subscribe
@@ -242,6 +256,9 @@ class SkillTracker {
             int drop = gained - previousGained;
             if (drop > 0) {
                 lastXpDrops.put(skill, drop);
+                if (!isSkillPaused(skill)) {
+                    actionCounts.merge(skill, 1, Integer::sum);
+                }
                 // By game tick (600ms), so skills gaining XP on the same tick (Attack and Hitpoints) tie
                 lastXpMillis.put(skill, System.currentTimeMillis() / 600 * 600);
                 java.util.ArrayDeque<Integer> recent = recentXpDrops.computeIfAbsent(skill, k -> new java.util.ArrayDeque<>());
@@ -261,7 +278,7 @@ class SkillTracker {
      * place for the Toolbelt and the Skilling Helper alike, so either shows the same goals. (The Toolbelt's old
      * group, so its goals stay where they were; bird houses and compost are kept there too.)
      */
-    static final String SHARED_GROUP = "bradsmultitool";
+    static final String SHARED_GROUP = SkillGoals.GROUP;
     private static final String[] SHARED_PREFIXES = {"goal.", "goalStart.", "goalTarget.", "goalMethod.", "trainingFocus.", "prayerMethod."};
 
     // Goals are kept with your RuneScape profile, which RuneLite only knows a moment after login (and
@@ -279,6 +296,7 @@ class SkillTracker {
             recentXpDrops.clear();
             pausedSkills.clear();
             itemCounts.clear();
+        actionCounts.clear();
             savedSession = null;
             goalItems.get().forgetBank();
         }
@@ -396,28 +414,12 @@ class SkillTracker {
 
     /** The skill's goal in XP, or 0 for none. */
     public int getSkillGoal(Skill skill) {
-        String value = configManager.getRSProfileConfiguration(SHARED_GROUP, "goal." + skill.name());
-        try {
-            return value == null ? 0 : Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        return SkillGoals.goal(configManager, skill);
     }
 
     public void setSkillGoal(Skill skill, int goalXp) {
-        if (goalXp <= 0) {
-            configManager.unsetRSProfileConfiguration(SHARED_GROUP, "goal." + skill.name());
-            configManager.unsetRSProfileConfiguration(SHARED_GROUP, "goalStart." + skill.name());
-            configManager.unsetRSProfileConfiguration(SHARED_GROUP, "goalTarget." + skill.name());
-        } else {
-            // Modifying a goal still underway keeps where it started (the goal bar's progress)
-            int xp = client.getSkillExperience(skill);
-            boolean underway = getSkillGoal(skill) > xp && getSkillGoalStart(skill) > 0;
-            configManager.setRSProfileConfiguration(SHARED_GROUP, "goal." + skill.name(), goalXp);
-            if (!underway) {
-                configManager.setRSProfileConfiguration(SHARED_GROUP, "goalStart." + skill.name(), xp);
-            }
-        }
+        // (the Planner's Calculator sets goals the same way, through SkillGoals)
+        SkillGoals.setGoal(configManager, skill, goalXp, client.getSkillExperience(skill));
         updatePanelUI();
     }
 
@@ -603,12 +605,7 @@ class SkillTracker {
 
     /** Your XP in the skill when you set its goal (for the goal bar), or 0 if unknown. */
     public int getSkillGoalStart(Skill skill) {
-        String value = configManager.getRSProfileConfiguration(SHARED_GROUP, "goalStart." + skill.name());
-        try {
-            return value == null ? 0 : Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        return SkillGoals.goalStart(configManager, skill);
     }
 
     public void resetSkill(Skill skill) {
@@ -1050,10 +1047,7 @@ class SkillTracker {
             }
         });
         itemCounts.putAll(saved.items);
-        long minutes = (now - saved.savedAt) / 60_000;
-        client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=00ffff>[" + identity.chatName + "]</col> "
-            + "Carried on your skill tracker session from " + (minutes < 1 ? "just now" : minutes + " min ago")
-            + " (Keep Session After Restart; Reset all skills to start again).", null);
+        // Picked up quietly: no message
         updatePanelUI();
     }
 

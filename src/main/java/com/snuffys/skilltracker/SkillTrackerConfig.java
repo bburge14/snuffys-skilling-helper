@@ -1565,7 +1565,7 @@ public interface SkillTrackerConfig extends CommonConfig {
     @ConfigItem(
         keyName = "showBankedXp",
         name = "Show Banked XP",
-        description = "<div width='300'>On a production skill's goal (Cooking, Herblore, Prayer...): the XP in what's in your bank and inventory at your level, the most XP things first. Just a figure: it doesn't change the suggestion. Shows once you've opened your bank",
+        description = "<div width='300'>On a production skill's goal (Cooking, Herblore, Prayer...): the XP in what's in your bank and inventory at your level, the most XP things first. Just a figure: it doesn't change the suggestion. Note: it uses your bank as you last saw it, so open your bank once on each account (after that it's remembered and updates whenever you open it)",
         section = goalsSection,
         position = 9
     )
@@ -1598,7 +1598,7 @@ public interface SkillTrackerConfig extends CommonConfig {
     @ConfigItem(
         keyName = "showTrackerItems",
         name = "Show Items Gathered",
-        description = "<div width='300'>How many logs, fish and ore you've got and food you've cooked (and burnt) this session, and how many an hour, on the skill's card and the pinned skill. Counted from the game's chat messages",
+        description = "<div width='300'>How many you've done this session and how many an hour, on the skill's card and the pinned skill: logs, fish, ore and food cooked (and burnt) from the game's messages, and for other skills each action (steals, items made, casts...). Per hour at the skill's XP rate",
         section = trackerSection,
         position = 13
     )
@@ -1622,7 +1622,7 @@ public interface SkillTrackerConfig extends CommonConfig {
     @ConfigItem(
         keyName = "showMaterialsValue",
         name = "Show Materials Value",
-        description = "<div width='300'>On a production skill's goal: the Grand Exchange value of the materials counted in Banked XP (in your bank and inventory). Just a figure. Shows once you've opened your bank",
+        description = "<div width='300'>On a production skill's goal: the Grand Exchange value of the materials counted in Banked XP (in your bank and inventory). Just a figure. Note: it uses your bank as you last saw it, so open your bank once on each account (after that it's remembered and updates whenever you open it)",
         section = goalsSection,
         position = 12
     )

@@ -111,11 +111,12 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
             }
             double banked = plugin.getGoalItems().bankedXp(skill);
             if (banked >= 1 && config.showBankedXp()) {
-                line("Banked:", BradsMultiToolPanel.shortNumber((long) banked) + " XP", Color.WHITE);
+                line("Banked:", BradsMultiToolPanel.shortNumber((long) banked) + " XP"
+                    + BradsMultiToolPanel.bankedLevel(xp, banked).replace(" (to level ", " (lvl ").replace(")", ")"), Color.WHITE);
             }
             long materials = plugin.getGoalItems().materialsValue(skill);
             if (materials > 0 && config.showMaterialsValue()) {
-                line("Materials:", BradsMultiToolPanel.shortNumber(materials) + " gp", Color.WHITE);
+                line("Materials worth:", BradsMultiToolPanel.shortNumber(materials) + " gp", Color.WHITE);
             }
             String killRate = GoalLines.killRate(plugin, skill);
             if (killRate != null) {
@@ -124,8 +125,9 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
             Map<String, Boolean> tools = config.showTrainingSuggestion()
                 ? GoalLines.tools(plugin, skill, level) : Collections.emptyMap();
             if (!tools.isEmpty()) {
-                line("Needs:", String.join(", ", tools.keySet()),
-                    tools.containsValue(false) ? HudColors.BAD : HudColors.GOOD);
+                // One line across the card, wrapped like the Tracking line (long item names don't fit the right column)
+                panelComponent.getChildren().add(new TextBlockComponent("Needs: " + String.join(", ", tools.keySet()),
+                    tools.containsValue(false) ? HudColors.BAD : HudColors.GOOD, false));
             }
         }
         // Actions (or kills) left, as on the tracker card
