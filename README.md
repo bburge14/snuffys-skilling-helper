@@ -1,0 +1,1 @@
+# snuffys-skilling-helper
