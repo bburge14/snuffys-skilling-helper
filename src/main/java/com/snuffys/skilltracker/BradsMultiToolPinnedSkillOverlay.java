@@ -73,9 +73,13 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
             line("TTL:", ttl, Color.WHITE);
         }
         line("XP/hr:", plugin.isSkillAutoPaused(skill) ? "Idle" : paused ? "Paused" : BradsMultiToolPanel.shortNumber(rate), Color.WHITE);
-        line("Gained:", BradsMultiToolPanel.shortNumber(plugin.getSkillGained(skill)), Color.WHITE);
+        // Compact Cards: the bars, XP/hr and time to level only
+        boolean full = !config.compactOverlays();
+        if (full) {
+            line("Gained:", BradsMultiToolPanel.shortNumber(plugin.getSkillGained(skill)), Color.WHITE);
+        }
         // Logs, fish, ore or food this session, with how many an hour (Show Items Gathered)
-        if (config.showTrackerItems()) {
+        if (full && config.showTrackerItems()) {
             for (String[] items : plugin.itemLines(skill)) {
                 line(items[0] + ":", items[1], Color.WHITE);
             }
@@ -105,7 +109,9 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
                 int toGo = Math.max(0, to - xp);
                 String when = toGo == 0 ? "Done!" : rate > 0 && !paused ? BradsMultiToolPanel.formatDuration(toGo * 3600L / rate)
                     : BradsMultiToolPanel.shortNumber(toGo) + " left";
-                panelComponent.getChildren().add(bar(done, "Milestone: Lvl " + milestone.to,
+                // (a little room between it and the goal bar, as on the sidebar card)
+                panelComponent.getChildren().add(new Spacer(2));
+                panelComponent.getChildren().add(bar(done, "Step: Lvl " + milestone.to,
                     String.format("%.1f%%", Math.max(0, Math.min(1, done)) * 100), when, BradsMultiToolPanel.MILESTONE_FILL));
             }
             String suggestion = suggestion(skill, level);
@@ -117,24 +123,24 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
                 }
             }
             // What to make or use from your items ("Burn: Yew logs (you have 200)")
-            GoalLines.ItemLine item = config.showTrainingSuggestion() ? GoalLines.itemLine(plugin, skill) : null;
+            GoalLines.ItemLine item = full && config.showTrainingSuggestion() ? GoalLines.itemLine(plugin, skill) : null;
             if (item != null) {
                 panelComponent.getChildren().add(new TextBlockComponent(item.label + " " + item.item + " " + item.have, SOFT, false));
             }
             double banked = plugin.getGoalItems().bankedXp(skill);
-            if (banked >= 1 && config.showBankedXp()) {
+            if (full && banked >= 1 && config.showBankedXp()) {
                 line("Banked:", BradsMultiToolPanel.shortNumber((long) banked) + " XP"
                     + BradsMultiToolPanel.bankedLevel(xp, banked).replace(" (to level ", " (lvl ").replace(")", ")"), Color.WHITE);
             }
             long materials = plugin.getGoalItems().materialsValue(skill);
-            if (materials > 0 && config.showMaterialsValue()) {
+            if (full && materials > 0 && config.showMaterialsValue()) {
                 line("Materials worth:", BradsMultiToolPanel.shortNumber(materials) + " gp", Color.WHITE);
             }
             String killRate = GoalLines.killRate(plugin, skill);
             if (killRate != null) {
                 panelComponent.getChildren().add(new TextBlockComponent("Kill rate: " + killRate, SOFT, false));
             }
-            Map<String, Boolean> tools = config.showTrainingSuggestion()
+            Map<String, Boolean> tools = full && config.showTrainingSuggestion()
                 ? GoalLines.tools(plugin, skill, level) : Collections.emptyMap();
             if (!tools.isEmpty()) {
                 // One line across the card, wrapped like the Tracking line (long item names don't fit the right column)
@@ -143,7 +149,7 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
             }
         }
         // Actions (or kills) left, as on the tracker card
-        if (config.showTrackerActions() && (goalXp > 0 || !GoalLines.KILL_SKILLS.contains(skill))) {
+        if (full && config.showTrackerActions() && (goalXp > 0 || !GoalLines.KILL_SKILLS.contains(skill))) {
             GoalLines.Actions count = GoalLines.actions(plugin, config, skill, xp, stepEndLevel(skill, level, goalXp));
             line(count.name + ":", count.value, Color.WHITE);
         }
@@ -152,7 +158,7 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
 
     // Where the plan's current step ends (the suggested method changes there before the goal), or 0
     private int stepEndLevel(Skill skill, int level, int goalXp) {
-        if (goalXp <= 0 || !config.showTrainingSuggestion() || plugin.getGoalTarget(skill) != null) {
+        if (goalXp <= 0 || !config.showTrainingSuggestion() || config.compactOverlays() || plugin.getGoalTarget(skill) != null) {
             return 0;
         }
         List<TrainingAdvisor.Stage> plan = plugin.getTrainingAdvisor().plan(skill, level, Experience.getLevelForXp(goalXp));
@@ -167,7 +173,7 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
 
     // What to train for the goal: your pick, else the suggestion for your Training Focus
     private String suggestion(Skill skill, int level) {
-        if (!config.showTrainingSuggestion()) {
+        if (!config.showTrainingSuggestion() || config.compactOverlays()) {
             return null;
         }
         String target = plugin.getGoalTarget(skill);
@@ -185,6 +191,36 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
             return "Plan: " + now.text + " (to " + now.planStep.to + ")";
         }
         return now.label + " " + now.text + (plan.size() > 1 ? " (to " + plan.get(0).to + ")" : "");
+    }
+
+    // Blank room of a set height between two parts of the panel
+    private static final class Spacer implements net.runelite.client.ui.overlay.components.LayoutableRenderableEntity {
+        private final int height;
+        private final java.awt.Rectangle bounds = new java.awt.Rectangle();
+
+        Spacer(int height) {
+            this.height = height;
+        }
+
+        @Override
+        public Dimension render(Graphics2D graphics) {
+            bounds.setSize(0, height);
+            return new Dimension(0, height);
+        }
+
+        @Override
+        public java.awt.Rectangle getBounds() {
+            return bounds;
+        }
+
+        @Override
+        public void setPreferredLocation(java.awt.Point position) {
+            bounds.setLocation(position);
+        }
+
+        @Override
+        public void setPreferredSize(Dimension dimension) {
+        }
     }
 
     private static ProgressBarComponent bar(double progress, String left, String centre, String right, Color fill) {
