@@ -2,6 +2,10 @@
 
 Each version's changes, newest first.
 
+## 1.1.2 (2026-11-02)
+
+- Plugin Hub: build=standard in each plugin's runelite-plugin.properties
+
 ## 1.1.1 (2026-11-02)
 
 - Planner: dailies are only your own, with examples until you add one
