@@ -2,6 +2,11 @@
 
 Each version's changes, newest first.
 
+## 1.5.0 (2026-11-03)
+
+- Tracker and Planner: Follow per skill (your plan, your pick for a one-off, the wiki, or the usual order) on both goal cards, the others kept to switch back; sending a plan follows it, a pick follows the pick. Supply milestones go by what the other plan still needs: passed another way they stay open (Levels done, supplies to get), and say how many are for the other plan and how many for their levels
+- Planner and tracker: sending a plan clears a Track for goal pick too (it came before the plan, so the tracker kept suggesting it); the goal card says when a pick is what the tracker follows, with Follow the plan instead
+
 ## 1.4.0 (2026-11-03)
 
 - Planner: tooltips in sections (gold headers, values in columns, gains green, losses red); each milestone's Sell by (setting, GE or high alch, the better marked, an orange line when the other pays more); Record sales... takes what you got each; so far counts what's not sold yet at today's worth (cash and net)
