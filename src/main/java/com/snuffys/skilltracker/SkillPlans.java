@@ -58,6 +58,16 @@ final class SkillPlans {
         double xp;
         /** What of its products is kept for other skills' plans (none: all of it's sold). */
         final List<Supply> supplies = new ArrayList<>();
+        /** Why it's there, when it was added for something ("to reach 60 for the Firemaking supply"), or null. */
+        String note;
+        /**
+         * The pace its time is worked out at ({@link PlannerRates}: "Normal", "1-tick", "Wiki guide"...), or null for
+         * the wiki guide's rate where there is one, else the normal pace.
+         */
+        String pace;
+        /** What you've told it you did with what it made so far: sold on the GE, and high alched. */
+        long sold;
+        long alched;
 
         Step(String action, int from, int to, String method, double xp) {
             this.action = action;
@@ -69,6 +79,10 @@ final class SkillPlans {
 
         Step copy() {
             Step copy = new Step(action, from, to, method, xp);
+            copy.note = note;
+            copy.pace = pace;
+            copy.sold = sold;
+            copy.alched = alched;
             for (Supply supply : supplies) {
                 copy.supplies.add(new Supply(supply.skill, supply.item, supply.quantity));
             }
@@ -96,6 +110,15 @@ final class SkillPlans {
         /** What you called it ("Darts to 99"), or null for an unnamed one. */
         String name;
         final List<Step> steps = new ArrayList<>();
+        /** Made from the Skilling Helper's goal: that goal's XP (0: not made from it) and the method it was set to then
+         *  (null: its suggestions), to tell when the goal changes after. */
+        int fromGoal;
+        String fromPick;
+        /**
+         * The plan you sent to the tracker (Export to tracker): your edits to it are a draft until you send them
+         * again. Copies don't carry it (a duplicate is a new plan).
+         */
+        boolean sent;
 
         Plan(int goal) {
             this.goal = goal;
@@ -104,6 +127,8 @@ final class SkillPlans {
         Plan copy() {
             Plan out = new Plan(goal);
             out.name = name;
+            out.fromGoal = fromGoal;
+            out.fromPick = fromPick;
             for (Step step : steps) {
                 out.steps.add(step.copy());
             }
@@ -255,16 +280,31 @@ final class SkillPlans {
         if (plan.name != null && !plan.name.trim().isEmpty()) {
             out.append("name\t").append(clean(plan.name.trim())).append('\n');
         }
+        if (plan.sent) {
+            out.append("sent\t1\n");
+        }
+        if (plan.fromGoal > 0) {
+            out.append("from\t").append(plan.fromGoal).append('\t').append(plan.fromPick == null ? "" : clean(plan.fromPick)).append('\n');
+        }
         for (Step step : plan.steps) {
             out.append(step.from).append('\t').append(step.to).append('\t').append(clean(step.action)).append('\t')
                 .append(step.method == null ? "" : clean(step.method)).append('\t').append(step.xp);
-            // (its supplies for other plans, when it has any: "FIREMAKING|Yew logs|30000;...")
-            if (!step.supplies.isEmpty()) {
-                out.append('\t');
-                for (Supply supply : step.supplies) {
-                    out.append(supply.skill).append('|').append(clean(supply.item).replace("|", " ").replace(";", " "))
-                        .append('|').append(supply.quantity).append(';');
-                }
+            // (its supplies for other plans, when it has any: "FIREMAKING|Yew logs|30000;...", then its note)
+            // (then its supplies for other plans, "FIREMAKING|Yew logs|30000;...", its note, pace, and what you've sold
+            // and alched: each column only when it or one after it has something)
+            StringBuilder supplies = new StringBuilder();
+            for (Supply supply : step.supplies) {
+                supplies.append(supply.skill).append('|').append(clean(supply.item).replace("|", " ").replace(";", " "))
+                    .append('|').append(supply.quantity).append(';');
+            }
+            List<String> more = new ArrayList<>(java.util.Arrays.asList(supplies.toString(),
+                step.note == null ? "" : clean(step.note), step.pace == null ? "" : clean(step.pace),
+                step.sold > 0 ? String.valueOf(step.sold) : "", step.alched > 0 ? String.valueOf(step.alched) : ""));
+            while (!more.isEmpty() && more.get(more.size() - 1).isEmpty()) {
+                more.remove(more.size() - 1);
+            }
+            for (String column : more) {
+                out.append('\t').append(column);
             }
             out.append('\n');
         }
@@ -284,6 +324,11 @@ final class SkillPlans {
                     plan.goal = Integer.parseInt(parts[1].trim());
                 } else if (parts.length >= 2 && parts[0].equals("name")) {
                     plan.name = parts[1].trim().isEmpty() ? null : parts[1].trim();
+                } else if (parts.length >= 2 && parts[0].equals("sent")) {
+                    plan.sent = "1".equals(parts[1].trim());
+                } else if (parts.length >= 2 && parts[0].equals("from")) {
+                    plan.fromGoal = Integer.parseInt(parts[1].trim());
+                    plan.fromPick = parts.length > 2 && !parts[2].trim().isEmpty() ? parts[2].trim() : null;
                 } else if (parts.length >= 3 && !parts[2].isEmpty()) {
                     int from = Integer.parseInt(parts[0].trim());
                     int to = Integer.parseInt(parts[1].trim());
@@ -296,6 +341,18 @@ final class SkillPlans {
                             if (bits.length == 3) {
                                 step.supplies.add(new Supply(bits[0], bits[1], Long.parseLong(bits[2].trim())));
                             }
+                        }
+                        if (parts.length > 6 && !parts[6].trim().isEmpty()) {
+                            step.note = parts[6].trim();
+                        }
+                        if (parts.length > 7 && !parts[7].trim().isEmpty()) {
+                            step.pace = parts[7].trim();
+                        }
+                        if (parts.length > 8 && !parts[8].trim().isEmpty()) {
+                            step.sold = Math.max(0, Long.parseLong(parts[8].trim()));
+                        }
+                        if (parts.length > 9 && !parts[9].trim().isEmpty()) {
+                            step.alched = Math.max(0, Long.parseLong(parts[9].trim()));
                         }
                         plan.steps.add(step);
                     }
