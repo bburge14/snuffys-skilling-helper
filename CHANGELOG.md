@@ -2,6 +2,16 @@
 
 Each version's changes, newest first.
 
+## 1.7.0 (2026-11-04)
+
+- Settings: names and choices fit the sidebar (shorter labels and names, saved keys unchanged), and the settings test now lays out each plugin's panel at the sidebar's width and fails on anything cut short
+- Tracker: Set as active goal and its gold dot only with Highlight For on the active goal
+- Goal items: tools for gathering goals worked out first and on their own, each production goal separately, and a problem with one is logged (Goal tools for / Goal items for <skill>) instead of leaving every goal with no highlights
+- Tracker: a plan milestone is translated into the goal's terms from its action (Maple logs: every maple tree and an axe; Raw shark: the fish and its harpoon; a creature: its trap), the wiki guide's method adding its places; between milestones or before the first, the goal follows the next one instead of nothing (no suggestion meant no outlines or tool highlights)
+- Skilling hover card: felling axes (and infernal, 3rd age and gilded axes and pickaxes) count as your tool at their tier; Best For You only for a better tier
+- Tracker: an active goal (right-click a goal > Set as active goal, a gold dot marks it) and Highlight For (every goal, or only the active one) for the outlines and item highlights
+- Tracker: a plan milestone the wiki's guide has no method for (Maple logs) gets its trees, rocks or spots from the game's objects, so they're outlined and its tools (an axe) highlighted
+
 ## 1.6.0 (2026-11-03)
 
 - Tracker: fold each card to its goal bar (- / + at its top-left, remembered per skill)
