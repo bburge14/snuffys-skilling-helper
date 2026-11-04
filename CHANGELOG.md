@@ -2,6 +2,10 @@
 
 Each version's changes, newest first.
 
+## 1.2.0 (2026-11-03)
+
+- Planner supplies: a second supply no longer replaces the first (onto a milestone of the same method, or after the other supplies), supplies already in this skill's plan aren't listed, and a milestone says what it keeps for which plan (left out of its sales and net)
+
 ## 1.1.4 (2026-11-03)
 
 - Planner: GE buy limits in Timers (how much of each limit is used, when it resets, and whether a stuck offer is the limit or your price), buy time in a plan's materials; hover cards stay away from other plugins' panels under the mouse
