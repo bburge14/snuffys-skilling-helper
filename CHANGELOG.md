@@ -2,6 +2,11 @@
 
 Each version's changes, newest first.
 
+## 1.8.0 (2026-11-04)
+
+- Training locations: fishing spots, every fish's places from the wiki's spot kinds (the guides' picks first: Fishing Guild for sharks, Otto's Grotto for barbarian fishing, Prifddinas and Shilo for fly fishing...); the tracker's Where line for guide methods by the fish they catch
+- Training locations: locations.json (scripts/update_training_locations.py, from each tree, rock, stall and creature's wiki page, the training guides' picks first with why) shown on each Planner milestone's tooltip (Where) and the tracker's Where line for plan milestones and guide methods with no places
+
 ## 1.7.0 (2026-11-04)
 
 - Settings: names and choices fit the sidebar (shorter labels and names, saved keys unchanged), and the settings test now lays out each plugin's panel at the sidebar's width and fails on anything cut short
