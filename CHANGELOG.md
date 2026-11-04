@@ -2,6 +2,11 @@
 
 Each version's changes, newest first.
 
+## 1.6.0 (2026-11-03)
+
+- Tracker: fold each card to its goal bar (- / + at its top-left, remembered per skill)
+- Tracker: training what your plan's milestone says (Maple tree for Maple logs) no longer offers to track it, even when the wiki's guide has no method for it
+
 ## 1.5.0 (2026-11-03)
 
 - Tracker and Planner: Follow per skill (your plan, your pick for a one-off, the wiki, or the usual order) on both goal cards, the others kept to switch back; sending a plan follows it, a pick follows the pick. Supply milestones go by what the other plan still needs: passed another way they stay open (Levels done, supplies to get), and say how many are for the other plan and how many for their levels
