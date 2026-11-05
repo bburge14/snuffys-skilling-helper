@@ -19,7 +19,7 @@ dependencies {
 }
 
 group = 'com.snuffys.skilltracker'
-version = '1.8.0'
+version = '1.9.0'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

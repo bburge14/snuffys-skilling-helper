@@ -120,7 +120,8 @@ class TrainingAdvisor {
         // the Training Focus, behind a method you pick (and a Track for goal pick, which callers check first)
         SkillPlans.Plan skillPlan = picked == null ? plugin.getSkillPlan(skill) : null;
         // The milestone you're on, else the next one (between milestones, or before the first, you're heading there)
-        SkillPlans.Step step = skillPlan == null ? null : skillPlan.milestone(level);
+        // (past supply milestones whose supplies you have all of: the Planner says which)
+        SkillPlans.Step step = skillPlan == null ? null : plugin.getPlanMilestone(skill, level);
         if (step != null) {
             TrainingData.Method method = planMethod(skill, step);
             Suggestion fromPlan = new Suggestion("Plan:", step.action, method, step.xp,
@@ -212,8 +213,8 @@ class TrainingAdvisor {
         // Where: the places of what it's from (best first), else the guide's
         com.google.gson.JsonArray places = new com.google.gson.JsonArray();
         if (locations != null) {
-            for (LocationData.Place place : locations.forAction(skill.getName(), step.action)) {
-                places.add(place.label());
+            for (LocationData.Place place : LocationData.reachableFirst(locations.forAction(skill.getName(), step.action), quests)) {
+                places.add(placeLabel(place));
             }
         }
         if (places.size() == 0 && guide != null) {
@@ -231,11 +232,23 @@ class TrainingAdvisor {
         return new TrainingData.Method(o);
     }
 
-    // A guide method the wiki gives no places for: those of its trees, rocks and creatures (best first; once, kept)
+    // Guide methods whose places come from their trees, rocks and creatures (not the guide): filled each time, so the
+    // ones you can reach (your quests) come first as you do them
+    private final java.util.Set<TrainingData.Method> filledPlaces = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+
+    // "Ape Atoll (3): needs Monkey Madness I" for one you can't reach yet
+    private String placeLabel(LocationData.Place place) {
+        List<String> missing = place.missing(quests);
+        return missing.isEmpty() ? place.label() : place.label() + ": needs " + String.join(", ", missing);
+    }
+
+    // A guide method the wiki gives no places for: those of its trees, rocks and creatures, the ones you can reach first
     private void addPlaces(TrainingData.Method method) {
-        if (locations == null || !method.places.isEmpty()) {
+        if (locations == null || !method.places.isEmpty() && !filledPlaces.contains(method)) {
             return;
         }
+        method.places.clear();
+        filledPlaces.add(method);
         java.util.Set<String> names = new java.util.LinkedHashSet<>();
         for (int id : method.objects) {
             SkillingData.Resource resource = skilling.object(id, null);
@@ -249,12 +262,18 @@ class TrainingAdvisor {
             names.add(target);
             names.add("Raw " + target.toLowerCase(java.util.Locale.ROOT));
         }
+        List<LocationData.Place> all = new ArrayList<>();
         for (String name : names) {
-            for (LocationData.Place place : locations.of(name)) {
-                if (!method.places.contains(place.label())) {
-                    method.places.add(place.label());
-                }
+            all.addAll(locations.of(name));
+        }
+        for (LocationData.Place place : LocationData.reachableFirst(all, quests)) {
+            String label = placeLabel(place);
+            if (!method.places.contains(label)) {
+                method.places.add(label);
             }
+        }
+        if (method.places.isEmpty()) {
+            filledPlaces.remove(method);
         }
     }
 

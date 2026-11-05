@@ -2,6 +2,20 @@
 
 Each version's changes, newest first.
 
+## 1.9.0 (2026-11-04)
+
+- Goal bar for supplies counts what's still to get (3 to get, as its step does) when there's no XP rate, instead of the XP left (300 read as 300 logs); other XP-left texts say xp
+- Pinned skill overlay: a bar whose left label is long (Goal: Supplies) leaves out its middle percentage instead of running into it, as the sidebar's bar does
+- Supply milestone ending partway into the level you're in kept no exact end, so the goal stayed Lvl 57 instead of the supplies: its end is now always exactly where getting them takes you; the step bar says Supplies (Step: Supplies ran into its percentage) and the Plan line says (supplies) instead of a level
+- Planner: the plan reflows around its supply milestones: each supply milestone runs as far as getting its supplies takes you from where the milestone before it ends; each level milestone after one keeps its target level and starts where it ends (sooner when you bought or banked some, later when there's more to get), and one the supplies take you past is done by them (the Skilling Helper's goal goes past it too)
+- Supply milestones are the supplies, not levels: the Skilling Helper's step bar (card and pinned skill) fills by how many you have of what the other plan wants, says how many are still to get, and is done when you have them all whatever level that is; the Planner's milestone card bar fills the same way; the Planner shares how many are wanted and had with the Skilling Helper
+- Linked plan ending in supplies: the goal is exactly where getting them takes you (its XP), not the level it's in, and its bar says Goal: Supplies; a supply milestone's bar says Step: Supplies (Step: ~Lvl 57 ran into its percentage)
+- Skilling Helper: a supply milestone counts its supplies, not its levels: the actions line says how many are still to get (the Planner works it out from your bank and inventory as you go), and its step bar runs to exactly where getting them takes you (~Lvl), on the card and the pinned skill
+- Supply milestones stay linked between the Planner and the Skilling Helper: on every refresh (bank, inventory, XP), whichever Planner tab is open, each plan's supply milestones follow what's still to get in your copy and in the tracker's copy (even while yours has unsent edits), and the ones you have all the supplies of are saved for the Skilling Helper, whose goal, suggestion, highlights and pinned card go on to the next milestone; the Planner's game-screen plan does too
+- Planner: a supply milestone is done as soon as you have all its supplies (cut, bought or banked): it says so, takes no levels, isn't the current one, and the next milestone starts where the one before it ended; if you use them up it comes back with what's left to get
+- Planner: supply milestones follow on from each other even when you have all their supplies (bought or banked): one with nothing left to get keeps its length but moves up when the one before it gets shorter, and the ordinary one after it follows; a supply milestone ends exactly where its supplies take you (partway into its last level), so its to-go, XP and time match what's still to get and the next one starts there; the supply line's counts are exact up to 99,999 so they add up
+- Training locations: the quests each place needs (from its notes and its area), checked against your quests: places you can reach first, the rest saying what they need (Planner's Where, the tracker's Where line); fishing spots for every fish; Ape Atoll's teaks last (aggressive jungle spiders keep you in combat)
+
 ## 1.8.0 (2026-11-04)
 
 - Training locations: fishing spots, every fish's places from the wiki's spot kinds (the guides' picks first: Fishing Guild for sharks, Otto's Grotto for barbarian fishing, Prifddinas and Shilo for fly fishing...); the tracker's Where line for guide methods by the fish they catch

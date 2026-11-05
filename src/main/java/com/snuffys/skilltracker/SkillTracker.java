@@ -444,7 +444,60 @@ class SkillTracker {
     /** The plan's milestone you're on at this level (else the next one ahead), or null without a plan or past it. */
     public SkillPlans.Step getPlanMilestone(Skill skill, int level) {
         SkillPlans.Plan plan = getSkillPlan(skill);
-        return plan == null ? null : plan.milestone(level);
+        return plan == null ? null : plan.milestone(level, SkillPlans.suppliesGot(configManager, skill));
+    }
+
+    /**
+     * Where a plan's supply milestone stands (its supplies still to get and where they take you), as the Planner
+     * worked it out from your bank and inventory; null for an ordinary milestone or when the Planner hasn't said.
+     */
+    public SkillPlans.SupplyState getSupplyState(Skill skill, SkillPlans.Step step) {
+        if (step == null || step.supplies.isEmpty() || configManager.getRSProfileKey() == null) {
+            return null;
+        }
+        return SkillPlans.supplyStates(configManager, skill).get(step.action.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    /**
+     * The XP a plan milestone ends at: a supply milestone where getting its supplies takes you (partway into a level),
+     * any other at its end level.
+     */
+    public int getMilestoneEndXp(Skill skill, SkillPlans.Step step) {
+        SkillPlans.SupplyState state = getSupplyState(skill, step);
+        if (state != null && state.endXp > 0) {
+            return (int) Math.min(Experience.MAX_SKILL_XP, state.endXp);
+        }
+        return Experience.getXpForLevel(Math.min(Experience.MAX_REAL_LEVEL, step.to));
+    }
+
+    /**
+     * The goal's name on its bar: "Supplies" when it's where your plan's last supply milestone ends (a plan that ends
+     * getting supplies for another skill's plan: the goal is those, not a level), else "Lvl 57" or the XP.
+     */
+    public String getGoalLabel(Skill skill, int goalXp) {
+        if (getGoalSupplies(skill, goalXp) != null) {
+            return "Supplies";
+        }
+        int goalLevel = Experience.getLevelForXp(goalXp);
+        return goalXp == Experience.getXpForLevel(goalLevel) ? "Lvl " + goalLevel : BradsMultiToolPanel.shortNumber(goalXp);
+    }
+
+    /**
+     * When the goal is your plan's last supply milestone (it ends where getting them takes you), where that stands;
+     * null for any other goal.
+     */
+    public SkillPlans.SupplyState getGoalSupplies(Skill skill, int goalXp) {
+        SkillPlans.Plan plan = getSkillPlan(skill);
+        SkillPlans.Step last = null;
+        if (plan != null) {
+            for (SkillPlans.Step step : plan.steps) {
+                if (last == null || step.to >= last.to) {
+                    last = step;
+                }
+            }
+        }
+        SkillPlans.SupplyState state = getSupplyState(skill, last);
+        return state != null && state.endXp > 0 && Math.abs(state.endXp - goalXp) <= 1 ? state : null;
     }
 
     /** What to train for a goal, by the Training Focus setting. */
