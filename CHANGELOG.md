@@ -2,6 +2,20 @@
 
 Each version's changes, newest first.
 
+## 1.10.0 (2026-11-05)
+
+- Skilling hover cards: Your Tool is green when it's the best you can use, orange when a better one is open to you, red only when you have none (in its metal's colour a dragon tool read as a warning)
+- Skilling Helper: the Where line shows one place, no (+47 more): where you've been training it when that's one of its places (noticed as you gain XP there, by the wiki's map areas for each place, now in locations.json; kept until you train that skill somewhere else), else the best one
+- Skills tab bars: brighter (level orange to green, goal gold), a pixel thicker (3) and on a nearly solid backing, so they read clearly over the skill stones
+- Skilling Helper: brighter progress bars on the skill cards and the pinned skill (level, goal and milestone), on a slightly darker track
+- Planner: minigames to plan with: Wintertodt, Tempoross, Hunters' Rumours, Pyramid Plunder and Volcanic Mine in their skills' Actions lists, timed by the hour at the wiki's XP rate for your level (each rate from a sentence on its wiki page, checked each time training.json is regenerated; Wintertodt's and the rumours' scale by level as their XP does; a straight line between the levels the wiki gives)
+- Skilling Helper: on a supply milestone the count switches every 5 seconds between the supplies still to get and the actions to the next level, as the other counts do
+- Planner: what your plan's milestones make and you then sell, alch or drop is counted as you do it: GE sales as they fill (after tax), high alchs (the item leaving and the coins coming in after you cast the spell on it) and drops (the item leaving after you choose Drop), on the milestone that makes it, as Record sales... does by hand; its money so far shows them (Dropped: worth nothing)
+- Planner: with the Skilling Helper running and the plan linked to your goal, the milestone you're on is timed at your own XP/hr as the tracker counts it while you train (45.5K/hr yours; Rate from: your XP/hr now), shared live between the plugins (PluginMessage xp-rate); the Planner still shows no rate of its own
+- Tree timers: at zero the tree falls with the next log, so the bar and its time also count your usual ticks between logs (shared by everyone chopping) and empty about when it falls, instead of sitting red and blinking until the next log
+- Actions count says what it counts to: Actions to lvl 60 / to goal on the pinned skill, 1,026 (60) on the sidebar card; when that isn't the next level it switches every 5 seconds between it and the next level, saying which
+- Pinned skill overlay: a bar whose left and right text are long together (Step: Lvl 60 with 69.5K xp left) leaves out its middle percentage too
+
 ## 1.9.0 (2026-11-04)
 
 - Goal bar for supplies counts what's still to get (3 to get, as its step does) when there's no XP rate, instead of the XP left (300 read as 300 logs); other XP-left texts say xp

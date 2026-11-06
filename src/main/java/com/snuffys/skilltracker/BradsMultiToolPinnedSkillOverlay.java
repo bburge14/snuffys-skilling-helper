@@ -117,7 +117,7 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
             String suggestion = suggestion(skill, level);
             if (suggestion != null) {
                 panelComponent.getChildren().add(new TextBlockComponent(suggestion, SOFT, false));
-                String where = plugin.getGoalTarget(skill) == null ? GoalLines.where(currentSuggestion(skill, level)) : null;
+                String where = plugin.getGoalTarget(skill) == null ? GoalLines.where(plugin, skill, currentSuggestion(skill, level)) : null;
                 if (where != null) {
                     panelComponent.getChildren().add(new TextBlockComponent("Where: " + where, SOFT, false));
                 }
@@ -151,7 +151,7 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
         // Actions (or kills) left, as on the tracker card
         if (full && config.showTrackerActions() && (goalXp > 0 || !GoalLines.KILL_SKILLS.contains(skill))) {
             GoalLines.Actions count = GoalLines.actions(plugin, config, skill, xp, stepEndLevel(skill, level, goalXp));
-            line(count.name + ":", count.value, Color.WHITE);
+            line(count.longName() + ":", count.value, Color.WHITE);
         }
         return super.render(graphics);
     }
@@ -232,7 +232,7 @@ public class BradsMultiToolPinnedSkillOverlay extends OverlayPanel {
         bar.setLeftLabel(left);
         // (the overlay's bar puts its middle text in the middle whatever: a long left label ("Goal: Supplies") would run
         // into it, so then it's left out, as the sidebar's bar does)
-        bar.setCenterLabel(left.length() > 12 ? "" : centre);
+        bar.setCenterLabel(left.length() > 12 || left.length() + right.length() > 20 ? "" : centre);
         bar.setRightLabel(right);
         bar.setForegroundColor(fill);
         bar.setBackgroundColor(BradsMultiToolPanel.BAR_BACKGROUND);
