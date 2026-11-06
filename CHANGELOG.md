@@ -2,6 +2,11 @@
 
 Each version's changes, newest first.
 
+## 1.11.0 (2026-11-06)
+
+- Tree fallen / rock depleted alerts for big trees and rocks: the clicked tile (a 2x2 yew's south-west corner) is matched against the whole of the object that despawns, not only its middle tile, which never matched
+- Tree timers as a status light (new Tree Timer setting, the default): a full circle green, then yellow, then red by thirds, flashing red once the tree can fall with the next log, instead of a countdown that looked exact when a tree's real timer can't be seen; Timer keeps the emptying pie
+
 ## 1.10.0 (2026-11-05)
 
 - Skilling hover cards: Your Tool is green when it's the best you can use, orange when a better one is open to you, red only when you have none (in its metal's colour a dragon tool read as a warning)
