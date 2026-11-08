@@ -155,8 +155,9 @@ class SkillTracker {
     @Subscribe
     public void onChatMessage(net.runelite.api.events.ChatMessage event) {
         ItemsGathered.Kind kind = ItemsGathered.of(event.getType(), event.getMessage());
-        // Not while the skill's clock is paused: the per-hour rate leaves that time out
-        if (kind != null && !isSkillIgnored(kind.skill) && !isSkillPaused(kind.skill)) {
+        // Not while you've paused the skill yourself; auto-paused it counts (the log's message comes just before its
+        // XP drop, which is what wakes the skill: a slow log after a pause was missed)
+        if (kind != null && !isSkillIgnored(kind.skill) && !(isSkillPaused(kind.skill) && !isSkillAutoPaused(kind.skill))) {
             itemCounts.merge(kind, 1, Integer::sum);
         }
     }
@@ -196,6 +197,15 @@ class SkillTracker {
     private void clearItems(Skill skill) {
         itemCounts.keySet().removeIf(kind -> kind.skill == skill);
         actionCounts.remove(skill);
+    }
+
+    // Closing RuneLite while logged in (it doesn't turn plugins off first): the session as of now, so Keep Session For
+    // counts from closing, not from your last XP (an idle half hour before closing lost it)
+    @Subscribe
+    public void onClientShutdown(net.runelite.client.events.ClientShutdown event) {
+        if (client.getGameState() == GameState.LOGGED_IN) {
+            saveSession(true);
+        }
     }
 
     @Subscribe
@@ -1205,7 +1215,7 @@ class SkillTracker {
     }
 
     private void saveSession(boolean always) {
-        if (config.keepSessionMinutes() <= 0 || configManager.getRSProfileKey() == null) {
+        if (config.keepSessionHours() <= 0 || configManager.getRSProfileKey() == null) {
             return;
         }
         SavedSession session = currentSession(System.currentTimeMillis());
@@ -1229,7 +1239,7 @@ class SkillTracker {
         }
         SavedSession saved = decode(configManager.getRSProfileConfiguration(identity.configGroup, SESSION_KEY));
         long now = System.currentTimeMillis();
-        if (saved == null || !recentEnough(saved.savedAt, now, config.keepSessionMinutes())
+        if (saved == null || !recentEnough(saved.savedAt, now, config.keepSessionHours() * 60)
             || gainedSkillXp.values().stream().anyMatch(gained -> gained > 0) || !itemCounts.isEmpty()) {
             return;
         }

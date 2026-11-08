@@ -2,6 +2,13 @@
 
 Each version's changes, newest first.
 
+## 2.0.0 (2026-11-07)
+
+- Keep Session For: its unit as hrs (RuneLite has no hours unit; the last commit didn't compile)
+- Skilling Helper: closing RuneLite while logged in saves the session (RuneLite doesn't turn plugins off first), so Keep Session For counts from closing; a session idle half an hour before closing was dropped at the next start
+- Skilling Helper: items gathered count while a skill is auto-paused (a log's message comes just before the XP drop that wakes it, so slow logs after a pause were missed: 100 logs for 36.6K XP); auto-pause back to a minute by default (players on the old 10 seconds moved to it once)
+- Deposit boxes count as banking: what leaves your inventory while a deposit box is open (the Woodcutting Guild's) is added to the bank as last seen, in the Planner and the Skilling Helper, so supplies and materials don't drop as if they'd gone
+
 ## 1.11.0 (2026-11-06)
 
 - Tree fallen / rock depleted alerts for big trees and rocks: the clicked tile (a 2x2 yew's south-west corner) is matched against the whole of the object that despawns, not only its middle tile, which never matched
