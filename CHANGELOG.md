@@ -2,6 +2,12 @@
 
 Each version's changes, newest first.
 
+## 2.1.0 (2026-11-10)
+
+- Forestry events on screen: what to click outlined and labelled (Chop this root, the sapling's mulch with its order once it says, the bushes to pollinate, Disarm the fox trap, Take egg / Give egg, Build the hive, Stand here on the right ritual circle, Bank logs at the rainbow), worked out as RuneLite's Woodcutting plugin does (it's off by default); an event it's on and highlighting is left to it; Forestry Highlights setting
+- Forestry event alerts catch every event from whichever of its NPCs shows first (the beekeeper and unfinished hives, the pheasants, the poachers, the flowering bushes' bees, the ent stumps), and the chat message says what each wants you to do (from the wiki's Forestry page)
+- Skilling Helper: a goal your plan sets isn't cleared as reached while the plan still has supplies to get (its XP is only where they were expected to take you: XP bonuses get there sooner); clearing it also unlinked the plan
+
 ## 2.0.0 (2026-11-07)
 
 - Keep Session For: its unit as hrs (RuneLite has no hours unit; the last commit didn't compile)
