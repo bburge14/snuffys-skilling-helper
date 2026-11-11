@@ -2,6 +2,12 @@
 
 Each version's changes, newest first.
 
+## 2.1.1 (2026-11-11)
+
+- Kills to level from your real kills: each kill notes your XP, so once you've killed a monster twice the count uses the XP a kill of it really gives you (a Gemstone crab burrows after ten minutes, it doesn't die of its hitpoints; misses and damage count too); until then its hitpoints at your style, and nothing for one you're fighting that isn't known rather than another monster's
+- Forestry highlights, Leprechaun: the ends of the rainbow are where to stand (Stand here (luck): Leprechaun's luck, more XP and bark), and the leprechaun himself is outlined as the one who banks your logs; the alert says so too
+- Forestry highlights: a sapling mulch pile whose place isn't known yet says which are still to find (Try for 1st, 2nd), as the sapling only names a pile's place when your mulch has it there
+
 ## 2.1.0 (2026-11-10)
 
 - Forestry events on screen: what to click outlined and labelled (Chop this root, the sapling's mulch with its order once it says, the bushes to pollinate, Disarm the fox trap, Take egg / Give egg, Build the hive, Stand here on the right ritual circle, Bank logs at the rainbow), worked out as RuneLite's Woodcutting plugin does (it's off by default); an event it's on and highlighting is left to it; Forestry Highlights setting
